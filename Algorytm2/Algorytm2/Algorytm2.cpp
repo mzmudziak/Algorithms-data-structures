@@ -45,7 +45,7 @@ struct Result
 	long long ways;
 	int order;
 
-	Result(long long  a, int b)
+	Result(long long a, int b)
 	{
 		ways = a;
 		order = b;
@@ -175,16 +175,16 @@ public:
 
 	Point* getPoint(int order)
 	{
-						Point* point = new Point();
-						cin >> point->steps;
-						cin >> point->x;
-						cin >> point->y;
-						point->order = order;
-						if (point->steps > maxSteps)
-						{
-											maxSteps = point->steps;
-						}
-						return point;
+		Point* point = new Point();
+		cin >> point->steps;
+		cin >> point->x;
+		cin >> point->y;
+		point->order = order;
+		if (point->steps > maxSteps)
+		{
+			maxSteps = point->steps;
+		}
+		return point;
 	}
 
 	void ProcessData()
@@ -199,13 +199,14 @@ public:
 
 	void CheckForResults(int i)
 	{
-						while (endPoints.begin() != endPoints.end() && endPoints.front()->steps == i)
-						{
-											Result* r = new Result(board_first[endPoints.front()->x][endPoints.front()->y].ways % 1000000007, endPoints.front()->order);
-											result.push_back(r);
-											endPoints.erase(endPoints.begin());
-						}
+		while (endPoints.begin() != endPoints.end() && endPoints.front()->steps == i)
+		{
+			Result* r = new Result(board_first[endPoints.front()->x][endPoints.front()->y].ways % 1000000007, endPoints.front()->order);
+			result.push_back(r);
+			endPoints.erase(endPoints.begin());
+		}
 	}
+
 	void Step()
 	{
 		for (int i = 0; i < n; i++)
