@@ -2,52 +2,20 @@
 //
 
 #include "stdafx.h"
+
 #include <iostream>
 #include <vector>
 using namespace std;
 
-/*
-Dane wejœciowe
-
-w pierwszym wierszu liczba ró¿nych nomina³ów (N)
-nastêpnie N wierszy z dwoma liczbami
-wielkoœæ nomina³u (kwota),
-liczba pieniêdzy o tym nominale
-na koniec 2 liczby
-kwota do rozmiany,
-tryb pracy: 1 = monety rozró¿nialne, 0 = monety nierozró¿nialne
-Wszystkie wielkoœci s¹ liczbami ca³kowitymi, wiêkszymi od 0, mieszcz¹cymi siê w typie ca³kowitym 4-bajtowym bez znaku.
-
-
-*/
-
 class CashUnit
 {
-private:
+public:
 	int value;
 	int quantity;
-public:
 	CashUnit(int value, int quantity)
 		: value(value),
-		  quantity(quantity)
-	{
-	}
-
-	CashUnit()
-	{
-		this->value = 0;
-		this->quantity = 0;
-	}
-
-	int getValue() const
-	{
-		return value;
-	}
-
-	int getQuantity() const
-	{
-		return quantity;
-	}
+		quantity(quantity)
+	{}
 };
 
 class Change
@@ -75,7 +43,7 @@ public:
 		cin >> sum;
 		cin >> mode;
 		maxSum = new int[denomQuantity];
-		getMaxSum();
+		getMaxSum(); // Mala tablica na przechowywanie danych w celu optymalizacji
 	}
 
 	void addCUnit(CashUnit* cashUnit)
@@ -83,81 +51,50 @@ public:
 		cashUnits.push_back(cashUnit);
 	}
 
-	void listStuff()
-	{
-		cout << "denomQuantity: " << denomQuantity << endl;
-		cout << "sum: " << sum << endl;
-		cout << "mode: " << mode << endl;
-		for (vector<CashUnit*>::iterator it = cashUnits.begin(); it != cashUnits.end(); it++)
-		{
-			cout << "V: " << (*it)->getValue() << " Q: " << (*it)->getQuantity() << endl;
-		}
-		for (int i = 0; i < denomQuantity; i++)
-		{
-			cout << "Ms: " << maxSum[i] << endl;
-		}
-	}
-
-
 	void getPossibilites(int currentValue, int tmpSum, int posCount)
 	{
-		for (int i = 0; i <= cashUnits[currentValue]->getQuantity(); i++)
+		for (int i = 0; i <= cashUnits[currentValue]->quantity; i++)
 		{
-			int nowaSuma = tmpSum + i * cashUnits[currentValue]->getValue();
-			if (nowaSuma == sum)
+			int newSum = tmpSum + i * cashUnits[currentValue]->value;
+			if (newSum == sum)
 			{
 				possibilites++;
-					return;
+				return;
 			}
-			
-			else {
-				if (nowaSuma <= sum)
-				{				
-					if (currentValue+1 < denomQuantity)
-					{
-						if (nowaSuma + maxSum[currentValue+1] >= sum)
-						getPossibilites(currentValue+1, nowaSuma, posCount);
-					}
-				}
-			}
-		}
-	}
-
-	void getPossibilitesMode(int currentValue, int tmpSum, int posCount)
-	{
-		for (int i = 0; i <= cashUnits[currentValue]->getQuantity(); i++)
-		{
-			int nowaSuma = tmpSum + i * cashUnits[currentValue]->getValue();
-			if (nowaSuma == sum)
+			if (newSum < sum &&	currentValue + 1 < denomQuantity &&	newSum + maxSum[currentValue + 1] >= sum)
 			{
-					possibilites += posCount * newtonsBinomial(cashUnits[currentValue]->getQuantity(), i);
-					return;
-			}
-			else {
-				if (nowaSuma <= sum)
-				{
-					if (currentValue + 1 < denomQuantity)
-					{
-						if (nowaSuma + maxSum[currentValue + 1] >= sum)
-						{
-							posCount = posCount * newtonsBinomial(cashUnits[currentValue]->getQuantity(), i);
-							getPossibilitesMode(currentValue + 1, nowaSuma, posCount);
-						}
-					}
-				}
+				getPossibilites(currentValue + 1, newSum, posCount);
 			}
 		}
 	}
 
-
-
-
-	void getMaxSum()
+	void getPossibilitesMode1(int currentValue, int tmpSum, int posCount)
 	{
-		maxSum[denomQuantity - 1] = cashUnits[denomQuantity - 1]->getValue() * cashUnits[denomQuantity - 1]->getQuantity();
+		for (int i = 0; i <= cashUnits[currentValue]->quantity; i++) // p
+		{
+			int newSum = tmpSum + i * cashUnits[currentValue]->value;
+			if (newSum == sum)
+			{
+				possibilites += posCount * newtonsBinomial(cashUnits[currentValue]->quantity, i);
+				return;
+			}
+			if (newSum < sum &&																	// Czy suma nie wykracza za poszukiwan¹
+							currentValue + 1 < denomQuantity  //czy nie wychodzê za wymiar wektora po wejsciu w rekurencjê ni¿ej?
+							&& newSum + maxSum[currentValue + 1] >= sum)  // czy dalsze wyniki maj¹ mo¿liwoœæ dania wyniku?
+					{
+						int newposCount = posCount * newtonsBinomial(cashUnits[currentValue]->quantity, i); // zliczaj mo¿liwoœci dojœ
+						getPossibilitesMode1(currentValue + 1, newSum, newposCount);
+					}
+				}
+			}
+	
+	
+	void getMaxSum() // Funkcja w celu optymalizacji, przechowuje tablicê maksymalnych wartoœci osi¹galnych przez ni¿sze nomina³y
+	{
+		maxSum[denomQuantity - 1] = cashUnits[denomQuantity - 1]->value * cashUnits[denomQuantity - 1]->quantity;
 		for (int i = denomQuantity - 2; i >= 0; i--)
 		{
-			maxSum[i] = maxSum[i + 1] + cashUnits[i]->getValue() * cashUnits[i]->getQuantity();
+			maxSum[i] = maxSum[i + 1] + cashUnits[i]->value * cashUnits[i]->quantity;
 		}
 	}
 
@@ -166,22 +103,22 @@ public:
 		cout << possibilites << endl;
 	}
 
-	int factorial(int n)
+	int factorial(int n) const
 	{
-		int factor = 1;
+		int f = 1;
 		for (int i = 1; i <= n; i++)
 		{
-			factor *= i;
+			f *= i;
 		}
-		return factor;
+		return f;
 	}
 
-	int newtonsBinomial(int n, int k)
+	int newtonsBinomial(int n, int k) const
 	{
 		return factorial(n) / (factorial(k) * factorial(n - k));
 	}
 
-	int getMode()
+	int getMode() const
 	{
 		return mode;
 	}
@@ -193,7 +130,7 @@ int main()
 	change.readData();
 	if (change.getMode() == 1)
 	{
-		change.getPossibilitesMode(0, 0, 1);
+		change.getPossibilitesMode1(0, 0, 1);
 	}
 	else {
 		change.getPossibilites(0, 0, 1);
