@@ -58,7 +58,7 @@ private:
 	int mode;
 	int possibilites = 0;
 	std::vector<CashUnit*> cashUnits;
-	int *maxSum;
+	int* maxSum;
 public:
 	void readData()
 	{
@@ -94,41 +94,70 @@ public:
 		}
 		for (int i = 0; i < denomQuantity; i++)
 		{
-			cout << "Ms: " << maxSum[i]  << endl;
+			cout << "Ms: " << maxSum[i] << endl;
 		}
 	}
 
 
-	void getPossibilites(int currentValue, int tmpSum)
+	void getPossibilites(int currentValue, int tmpSum, int posCount)
 	{
-	cout << "CurrVal: " << cashUnits[currentValue]->getValue() << " tmpSum: " << tmpSum << endl;
 		for (int i = 0; i <= cashUnits[currentValue]->getQuantity(); i++)
 		{
 			int nowaSuma = tmpSum + i * cashUnits[currentValue]->getValue();
-			cout << "NowaSuma: " << nowaSuma << " (" << tmpSum << "+ " <<i << "*" <<  cashUnits[currentValue]->getValue() <<")" << endl;
 			if (nowaSuma == sum)
 			{
 				possibilites++;
-				return;
+					return;
 			}
-			if (nowaSuma <= sum)
-			{
-				int newVal = currentValue + 1;
-				if (newVal < denomQuantity)
-				{
-					if (nowaSuma + maxSum[newVal] >= sum)
-					getPossibilites(newVal, nowaSuma);
+			
+			else {
+				if (nowaSuma <= sum)
+				{				
+					if (currentValue+1 < denomQuantity)
+					{
+						if (nowaSuma + maxSum[currentValue+1] >= sum)
+						getPossibilites(currentValue+1, nowaSuma, posCount);
+					}
 				}
 			}
 		}
 	}
 
+	void getPossibilitesMode(int currentValue, int tmpSum, int posCount)
+	{
+		for (int i = 0; i <= cashUnits[currentValue]->getQuantity(); i++)
+		{
+			int nowaSuma = tmpSum + i * cashUnits[currentValue]->getValue();
+			if (nowaSuma == sum)
+			{
+					possibilites += posCount * newtonsBinomial(cashUnits[currentValue]->getQuantity(), i);
+					return;
+			}
+			else {
+				if (nowaSuma <= sum)
+				{
+					if (currentValue + 1 < denomQuantity)
+					{
+						if (nowaSuma + maxSum[currentValue + 1] >= sum)
+						{
+							posCount = posCount * newtonsBinomial(cashUnits[currentValue]->getQuantity(), i);
+							getPossibilitesMode(currentValue + 1, nowaSuma, posCount);
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+
+
 	void getMaxSum()
 	{
 		maxSum[denomQuantity - 1] = cashUnits[denomQuantity - 1]->getValue() * cashUnits[denomQuantity - 1]->getQuantity();
-		for (int i = denomQuantity-2; i >= 0; i--)
+		for (int i = denomQuantity - 2; i >= 0; i--)
 		{
-			maxSum[i] = maxSum[i+1] + cashUnits[i]->getValue() * cashUnits[i]->getQuantity();
+			maxSum[i] = maxSum[i + 1] + cashUnits[i]->getValue() * cashUnits[i]->getQuantity();
 		}
 	}
 
@@ -137,27 +166,39 @@ public:
 		cout << possibilites << endl;
 	}
 
-	static int factorial(int n) {
+	int factorial(int n)
+	{
 		int factor = 1;
-		for (int i = 1; i <= n; i++) {
+		for (int i = 1; i <= n; i++)
+		{
 			factor *= i;
 		}
 		return factor;
 	}
 
-	static int newtonsBinomial(int n, int k) {
+	int newtonsBinomial(int n, int k)
+	{
 		return factorial(n) / (factorial(k) * factorial(n - k));
 	}
 
+	int getMode()
+	{
+		return mode;
+	}
 };
 
 int main()
 {
-	Change* change = new Change();
-	change->readData();
-	change->listStuff();
-	change->getPossibilites(0, 0);
-	change->listPossibilites();
+	Change change;
+	change.readData();
+	if (change.getMode() == 1)
+	{
+		change.getPossibilitesMode(0, 0, 1);
+	}
+	else {
+		change.getPossibilites(0, 0, 1);
+	}
+	change.listPossibilites();
 	return 0;
 }
 
