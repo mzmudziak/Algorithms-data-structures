@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+#include <conio.h>
 using namespace std;
 
 class CashUnit
@@ -61,6 +62,7 @@ public:
 			int newSum = tmpSum + i * cashUnits[currentValue]->value;
 			if (newSum > sum )
 			{
+				
 				return;
 			}
 			cout << "Nowa suma: " << newSum << " (" << tmpSum << " + " << "(" << i << "*" << cashUnits[currentValue]->value << ")" << endl;
@@ -151,6 +153,7 @@ public:
 			change.getPossibilites(0, 0, 1);
 		}
 		change.listPossibilites();
+		_getch();
 		return 0;
 	}
 
